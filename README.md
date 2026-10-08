@@ -241,8 +241,6 @@ Uygulamayı tarayıcınızda veya telefonunuzda anında canlı deneyimleyebilirs
 
 👉 **[https://project-bank-black.vercel.app/](https://project-bank-black.vercel.app/)**
 
-> 💡 **PWA İpucu:** iOS Safari'de **Paylaş > Ana Ekrana Ekle** veya Android Chrome'da **Uygulamayı Ekle** seçeneğini kullanarak telefonunuzda tam ekran bir native uygulama deneyimi yaşayabilirsiniz.
-
 ---
 
 ## 📄 Lisans
