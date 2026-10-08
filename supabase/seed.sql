@@ -1,0 +1,4 @@
+-- ==============================================================================
+-- Seed: supabase/seed.sql
+-- Mock veriler temizlenmiştir. Gerçek kullanıcılar ve veriler auth akışıyla oluşturulur.
+-- ==============================================================================

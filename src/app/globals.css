@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-brand-cream: #F9F8F6;
+  --color-brand-teal: #1A3636;
+  --color-brand-teal-dark: #122525;
+  --color-brand-teal-light: #244949;
+  --color-brand-sage: #678E77;
+  --color-brand-sage-light: #EBF2ED;
+  --color-brand-mink: #E8E3DD;
+  --color-brand-mink-dark: #D6C0B3;
+  --color-brand-earth: #40534C;
+
+  /* Dark mode palette tokens */
+  --color-dark-bg: #0F1715;
+  --color-dark-card: #182421;
+  --color-dark-card-hover: #20302C;
+  --color-dark-border: #263834;
+  --color-dark-text: #F1EFEA;
+  --color-dark-text-muted: #8C9E99;
+  --color-dark-sage: #7EA68E;
+  --color-dark-teal: #1F3832;
+}
+
+:root {
+  --background: #F9F8F6;
+  --foreground: #1A3636;
+  --card-bg: #FFFFFF;
+  --border-color: #E8E3DD;
+  color-scheme: light;
+}
+
+.dark {
+  --background: #0F1715;
+  --foreground: #F1EFEA;
+  --card-bg: #182421;
+  --border-color: #263834;
+  color-scheme: dark;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+html, body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  overscroll-behavior-y: none;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* iOS Safe Area Utilities */
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Scrollbar Hide for horizontal swipe cards */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Glassmorphism & Bottom Navigation */
+.bottom-nav-glass {
+  background: rgba(249, 248, 246, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(232, 227, 221, 0.85);
+}
+
+.dark .bottom-nav-glass {
+  background: rgba(15, 23, 21, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(38, 56, 52, 0.85);
+}
