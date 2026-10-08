@@ -14,7 +14,15 @@
 <p align="center">
   <b>Mobil öncelikli (Mobile-First PWA), ekstre kesim gününe duyarlı akıllı taksit simülatörlü ve kod tabanlı sosyal harcama takip uygulaması.</b>
   <br />
-  iOS Safari "Ana Ekrana Ekle" mantığıyla tam native hissiyatta çalışır; sıfır sunucu maliyetiyle Vercel & Supabase üzerinde barındırılabilir.
+  iOS Safari "Ana Ekrana Ekle" mantığıyla tam native hissiyatta çalışır.
+</p>
+
+<p align="center">
+  <a href="https://project-bank-black.vercel.app/" target="_blank">
+    <img src="https://img.shields.io/badge/Canl%C4%B1%20Uygulama-project--bank--black.vercel.app-1A3636?style=for-the-badge&logo=vercel&logoColor=white" alt="Canlı Uygulama" />
+  </a>
+  <br />
+  🔗 <b>Canlı Kullanım:</b> <a href="https://project-bank-black.vercel.app/" target="_blank">https://project-bank-black.vercel.app/</a>
 </p>
 
 </div>
@@ -22,6 +30,7 @@
 ---
 
 ## 📑 İçindekiler
+- [Canlı Uygulama](#-canlı-uygulama)
 - [Öne Çıkan Özellikler](#-öne-çıkan-özellikler)
 - [Tasarım & Renk Paleti](#-tasarım--renk-paleti)
 - [Teknoloji Yığını](#-teknoloji-yığını)
@@ -29,7 +38,6 @@
 - [Akıllı Taksit Motoru Mantığı](#-akıllı-taksit-motoru-mantığı)
 - [Güvenlik & Row Level Security (RLS)](#-güvenlik--row-level-security-rls)
 - [Hızlı Kurulum & Çalıştırma](#-hızlı-kurulum--çalıştırma)
-- [Dağıtım (Deployment)](#-dağıtım-deployment)
 - [Lisans](#-lisans)
 
 ---
@@ -196,8 +204,8 @@ erDiagram
 
 ### 1. Depoyu Klonlayın
 ```bash
-git clone https://github.com/KULLANICI_ADINIZ/Project-Bank-Checking.git
-cd Project-Bank-Checking
+git clone https://github.com/tarikmirzaomerli/Project-Bank.git
+cd Project-Bank
 ```
 
 ### 2. Bağımlılıkları Yükleyin
@@ -227,13 +235,13 @@ Tarayıcınızda [http://localhost:3000](http://localhost:3000) adresini açın.
 
 ---
 
-## 🚢 Dağıtım (Deployment)
+## 🌐 Canlı Uygulama
 
-Proje **Vercel Free Tier** üzerinde sıfır sunucu maliyetiyle çalışacak şekilde optimize edilmiştir:
-1. Depoyu GitHub'a pushlayın.
-2. [Vercel](https://vercel.com) paneline giderek depoyu import edin.
-3. Çevre değişkenlerine (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`) değerlerinizi ekleyin.
-4. **Deploy** butonuna basın!
+Uygulamayı tarayıcınızda veya telefonunuzda anında canlı deneyimleyebilirsiniz:
+
+👉 **[https://project-bank-black.vercel.app/](https://project-bank-black.vercel.app/)**
+
+> 💡 **PWA İpucu:** iOS Safari'de **Paylaş > Ana Ekrana Ekle** veya Android Chrome'da **Uygulamayı Ekle** seçeneğini kullanarak telefonunuzda tam ekran bir native uygulama deneyimi yaşayabilirsiniz.
 
 ---
 
