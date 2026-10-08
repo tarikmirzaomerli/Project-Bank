@@ -43,6 +43,11 @@ export async function supabaseSignOut() {
   return await supabase.auth.signOut()
 }
 
+export async function supabaseGetSession() {
+  const supabase = createClient()
+  return await supabase.auth.getSession()
+}
+
 export async function getOrCreateUserProfile(userId: string, email?: string, fullName?: string): Promise<Profile | null> {
   const supabase = createClient()
   

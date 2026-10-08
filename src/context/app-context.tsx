@@ -25,10 +25,14 @@ import {
   sendFriendRequest as supabaseSendFriendRequest,
   respondFriendRequest as supabaseRespondFriendRequest,
   supabaseSignOut,
+  supabaseGetSession,
+  getOrCreateUserProfile,
 } from '@/lib/supabase/service'
+import { TEST_USER_ID } from '@/lib/constants'
 
 interface AppContextType {
   currentUser: Profile | null
+  isLoaded: boolean
   setLoggedInUser: (profile: Profile | null) => void
   signOut: () => void
 
@@ -109,23 +113,52 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // 1. Oturum ve Veri Yükleme (LocalStorage ve Supabase)
   useEffect(() => {
-    try {
-      const savedRaw = localStorage.getItem(STORAGE_KEY)
-      if (savedRaw) {
-        const saved = JSON.parse(savedRaw)
-        if (saved.currentUser) setCurrentUser(saved.currentUser)
-        if (typeof saved.cashBalance === 'number') setCashBalance(saved.cashBalance)
-        if (Array.isArray(saved.cards)) setCards(saved.cards)
-        if (Array.isArray(saved.transactions)) setTransactions(saved.transactions)
-        if (Array.isArray(saved.installmentPlans)) setInstallmentPlans(saved.installmentPlans)
-        if (Array.isArray(saved.recurringExpenses)) setRecurringExpenses(saved.recurringExpenses)
-        if (Array.isArray(saved.friendships)) setFriendships(saved.friendships)
-        if (Array.isArray(saved.socialFeed)) setSocialFeed(saved.socialFeed)
+    let isMounted = true
+
+    const initAuthAndData = async () => {
+      let restoredUser: Profile | null = null
+
+      try {
+        const savedRaw = localStorage.getItem(STORAGE_KEY)
+        if (savedRaw) {
+          const saved = JSON.parse(savedRaw)
+          if (saved.currentUser) {
+            restoredUser = saved.currentUser
+            if (isMounted) setCurrentUser(saved.currentUser)
+          }
+          if (typeof saved.cashBalance === 'number' && isMounted) setCashBalance(saved.cashBalance)
+          if (Array.isArray(saved.cards) && isMounted) setCards(saved.cards)
+          if (Array.isArray(saved.transactions) && isMounted) setTransactions(saved.transactions)
+          if (Array.isArray(saved.installmentPlans) && isMounted) setInstallmentPlans(saved.installmentPlans)
+          if (Array.isArray(saved.recurringExpenses) && isMounted) setRecurringExpenses(saved.recurringExpenses)
+          if (Array.isArray(saved.friendships) && isMounted) setFriendships(saved.friendships)
+          if (Array.isArray(saved.socialFeed) && isMounted) setSocialFeed(saved.socialFeed)
+        }
+
+        // Eğer Supabase yapılandırılmışsa ve yerel test kullanıcısı değilse Supabase session kontrol et
+        if (isSupabaseConfigured() && (!restoredUser || restoredUser.id !== TEST_USER_ID)) {
+          const { data: sessionData } = await supabaseGetSession()
+          if (sessionData?.session?.user && isMounted) {
+            const user = sessionData.session.user
+            const profile = await getOrCreateUserProfile(user.id, user.email, user.user_metadata?.full_name)
+            if (profile && isMounted) {
+              setCurrentUser(profile)
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Oturum başlatma uyarısı:', err)
+      } finally {
+        if (isMounted) {
+          setIsLoaded(true)
+        }
       }
-    } catch {
-      // LocalStorage access ignore
-    } finally {
-      setIsLoaded(true)
+    }
+
+    initAuthAndData()
+
+    return () => {
+      isMounted = false
     }
   }, [])
 
@@ -151,9 +184,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [currentUser, cashBalance, cards, transactions, installmentPlans, recurringExpenses, friendships, socialFeed, isLoaded])
 
-  // Supabase'den veri çekme (Eğer oturum varsa)
+  // Supabase'den veri çekme (Eğer oturum varsa ve test kullanıcısı değilse)
   useEffect(() => {
     if (!currentUser || !isSupabaseConfigured()) return
+    if (currentUser.id === TEST_USER_ID) return // Test kullanıcısı yerel çalışır
 
     const loadRemote = async () => {
       try {
@@ -190,15 +224,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setRecurringExpenses([])
       setFriendships([])
       setSocialFeed([])
-      localStorage.removeItem(STORAGE_KEY)
+      try {
+        localStorage.removeItem(STORAGE_KEY)
+      } catch {
+        // ignore
+      }
     }
   }
 
   const signOut = async () => {
-    if (isSupabaseConfigured()) {
-      await supabaseSignOut()
+    try {
+      if (isSupabaseConfigured()) {
+        await supabaseSignOut()
+      }
+    } catch (err) {
+      console.warn('Çıkış hatası:', err)
+    } finally {
+      setLoggedInUser(null)
+      setActiveTab('dashboard')
     }
-    setLoggedInUser(null)
   }
 
   // --------------------------------------------------------------------------
@@ -496,6 +540,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     <AppContext.Provider
       value={{
         currentUser,
+        isLoaded,
         setLoggedInUser,
         signOut,
         activeTab,
