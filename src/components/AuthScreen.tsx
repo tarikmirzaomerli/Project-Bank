@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { useApp } from '@/context/app-context'
 import { isSupabaseConfigured, supabaseSignIn, supabaseSignUp } from '@/lib/supabase/service'
-import { LogIn, UserPlus, AlertCircle, Sparkles, CheckCircle2, ShieldCheck } from 'lucide-react'
+import { LogIn, UserPlus, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { TEST_ADMIN_USER } from '@/lib/constants'
 
@@ -17,13 +17,6 @@ export function AuthScreen() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  // Doğrudan Yönetici / Test Hesabı ile Giriş Yap
-  const handleTestLogin = () => {
-    setErrorMsg(null)
-    setSuccessMsg('Yönetici / Test hesabı ile giriş yapıldı!')
-    setLoggedInUser(TEST_ADMIN_USER)
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrorMsg(null)
@@ -31,28 +24,42 @@ export function AuthScreen() {
     setLoading(true)
 
     const cleanIdentifier = identifier.trim().toLowerCase()
+    const cleanPassword = password.trim()
 
-    // 1. Yönetici / Test hesabı bypass kontrolü (kullanıcı adı: test / şifre: test)
+    // Sessiz ve gizli Test/Yönetici girişi: test & test
     if (
       !isSignUp &&
       (cleanIdentifier === 'test' || cleanIdentifier === 'test@paratakip.local') &&
-      password.trim() === 'test'
+      cleanPassword === 'test'
     ) {
-      handleTestLogin()
+      setLoggedInUser(TEST_ADMIN_USER)
       setLoading(false)
       return
     }
 
-    if (isSignUp && password.length < 6) {
-      setErrorMsg('Şifre en az 6 karakter olmalıdır.')
-      setLoading(false)
-      return
+    if (isSignUp) {
+      if (password.length < 6) {
+        setErrorMsg('Şifre en az 6 karakter olmalıdır.')
+        setLoading(false)
+        return
+      }
+      if (!identifier.includes('@')) {
+        setErrorMsg('Geçerli bir e-posta adresi giriniz.')
+        setLoading(false)
+        return
+      }
     }
 
     const configured = isSupabaseConfigured()
 
     if (!configured) {
-      // Supabase .env.local henüz tanımlanmadıysa lokal oturum açılır
+      // Supabase yapılandırılmamışsa ve giriş yapılıyorsa
+      if (!isSignUp && cleanPassword !== 'test') {
+        setErrorMsg('E-posta veya şifre hatalı.')
+        setLoading(false)
+        return
+      }
+
       const dummyId = `usr-${Date.now()}`
       setLoggedInUser({
         id: dummyId,
@@ -87,7 +94,7 @@ export function AuthScreen() {
       } else {
         const { data, error } = await supabaseSignIn(identifier.trim(), password)
         if (error) {
-          setErrorMsg(error.message)
+          setErrorMsg('E-posta veya şifre hatalı.')
         } else if (data.user) {
           setLoggedInUser({
             id: data.user.id,
@@ -100,24 +107,11 @@ export function AuthScreen() {
           })
         }
       }
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Giriş yapılırken bir hata oluştu.')
+    } catch {
+      setErrorMsg('E-posta veya şifre hatalı.')
     } finally {
       setLoading(false)
     }
-  }
-
-  // Hızlı Demo Girişi (Yeni Kullanıcı)
-  const handleQuickDemo = () => {
-    setLoggedInUser({
-      id: `usr-demo-${Date.now()}`,
-      user_code: 'WTR-' + Math.random().toString(36).substring(2, 6).toUpperCase(),
-      full_name: 'Yeni Kullanıcı',
-      email: 'demo@paratakip.app',
-      avatar_url: null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
   }
 
   return (
@@ -175,23 +169,6 @@ export function AuthScreen() {
             </button>
           </div>
 
-          {/* Test / Yönetici Hesabı Hızlı Giriş Butonu */}
-          {!isSignUp && (
-            <button
-              type="button"
-              onClick={handleTestLogin}
-              className="w-full py-2.5 px-3.5 bg-[#EBF3EF] dark:bg-[#172B25] hover:bg-[#DFECE4] dark:hover:bg-[#1E3831] border border-[#BEDBCF] dark:border-[#2A4B40] rounded-xl text-xs font-bold text-[#1A3636] dark:text-[#8EB79F] transition-all flex items-center justify-between shadow-2xs group cursor-pointer"
-            >
-              <div className="flex items-center space-x-2">
-                <ShieldCheck className="w-4 h-4 text-[#356149] dark:text-[#7EA68E] shrink-0" />
-                <span className="font-semibold">Yönetici / Test Girişi</span>
-              </div>
-              <span className="font-mono text-[11px] bg-[#FFFFFF] dark:bg-[#101E1A] px-2 py-0.5 rounded-md text-[#356149] dark:text-[#8EB79F] border border-[#BEDBCF]/60 dark:border-[#2A4B40]/60">
-                test / test
-              </span>
-            </button>
-          )}
-
           <form onSubmit={handleSubmit} className="space-y-3.5">
             {isSignUp && (
               <div>
@@ -211,14 +188,14 @@ export function AuthScreen() {
 
             <div>
               <label className="block text-xs font-semibold text-[#5A6B68] dark:text-[#8C9E99] mb-1">
-                E-posta veya Kullanıcı Adı
+                E-posta Adresi
               </label>
               <input
                 type="text"
                 inputMode="email"
                 autoCapitalize="none"
                 required
-                placeholder={isSignUp ? 'ornek@email.com' : "ornek@email.com veya 'test'"}
+                placeholder="E-posta adresiniz"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 className="w-full px-3.5 py-2.5 bg-[#FAF9F7] dark:bg-[#131C1A] border border-[#E8E3DD] dark:border-[#263834] focus:border-[#1A3636] dark:focus:border-[#7EA68E] rounded-xl text-sm text-[#1A3636] dark:text-[#F1EFEA] outline-hidden font-medium"
@@ -232,7 +209,7 @@ export function AuthScreen() {
               <input
                 type="password"
                 required
-                placeholder={isSignUp ? 'En az 6 karakter' : '••••••••'}
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-3.5 py-2.5 bg-[#FAF9F7] dark:bg-[#131C1A] border border-[#E8E3DD] dark:border-[#263834] focus:border-[#1A3636] dark:focus:border-[#7EA68E] rounded-xl text-sm text-[#1A3636] dark:text-[#F1EFEA] outline-hidden font-medium"
@@ -262,18 +239,6 @@ export function AuthScreen() {
               <span>{loading ? 'İşleniyor...' : isSignUp ? 'Hesap Oluştur' : 'Giriş Yap'}</span>
             </button>
           </form>
-
-          {/* Quick Demo Test Access */}
-          <div className="pt-2 border-t border-[#E8E3DD] dark:border-[#263834] text-center">
-            <button
-              type="button"
-              onClick={handleQuickDemo}
-              className="text-xs text-[#678E77] dark:text-[#7EA68E] hover:underline font-semibold flex items-center justify-center space-x-1 mx-auto cursor-pointer"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Geliştirici Girişi (Sıfır Bakiye ile Başla)</span>
-            </button>
-          </div>
         </div>
       </div>
     </div>
